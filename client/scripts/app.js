@@ -1,7 +1,7 @@
 // YOUR CODE HERE:
 var app = {};
 app.init = function() {
-  return true;
+  app.handleUsernameClick();
 };
 
 app.success = function() {
@@ -32,6 +32,24 @@ app.clearMessages = function() {
   $('#chats').children().remove();
 };
 
-app.renderMessage = function() {
+app.renderMessage = function(message) {
+  var text = '<div>' + message.text + '</div>';
+  var username = '<a class="username" href="#">' + message.username + '</a>';
+  $('#main').append(username);
+  $('#chats').append(text);
+};
 
+app.renderRoom = function (roomName) {
+  var room = '<div>' + roomName + '</div>';
+  $('#roomSelect').append(room);
+};
+
+app.handleUsernameClick = function() {
+  $('#main').on('click', '.username', function() {
+    console.log('I\'ve been clicked!');
+  });
+};
+
+app.handleSubmit = function () {
+  
 };

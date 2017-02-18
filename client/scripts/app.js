@@ -1,8 +1,13 @@
 // YOUR CODE HERE:
 var app = {};
+
+app.server = 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages';
+
 app.init = function() {
   app.handleUsernameClick();
   app.handleSubmit();
+  //app.fetch();
+  //setInterval(app.fetch, 1000);
 };
 
 app.success = function() {
@@ -19,13 +24,20 @@ app.send = function(message) {
   });
 };
 
+
 app.fetch = function() {
   $.ajax({
-    url: undefined,
+    url: 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages',
     type: 'GET',
     datatype: 'json',
-    success: null,
-    data: JSON.stringify(message)
+    contentType: 'application/json',
+    success: function(data) {
+      // debugger;
+      console.log('this worked!' + JSON.stringify(data.results));
+    },
+    failure: function(data) {
+      console.log('this failed:' + data);
+    }
   });
 };
 
@@ -33,7 +45,7 @@ app.clearMessages = function() {
   $('#chats').children().remove();
 };
 
-app.renderMessage = function(message) {
+app.renderMessage = function(...message) {
   var text = '<div>' + message.text + '</div>';
   var username = '<a class="username" href="#">' + message.username + '</a>';
   $('#main').append(username);

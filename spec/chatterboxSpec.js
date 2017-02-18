@@ -57,6 +57,7 @@ describe('chatterbox', function() {
       });
 
       it('should submit a GET request via $.ajax', function(done) {
+        
         app.fetch();
         expect($.ajax.calledOnce).to.be.true;
         ajaxUrl = typeof $.ajax.args[0][0] === 'string' ? $.ajax.args[0][0] : $.ajax.args[0][0].url;

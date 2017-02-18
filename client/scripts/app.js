@@ -2,6 +2,7 @@
 var app = {};
 app.init = function() {
   app.handleUsernameClick();
+  app.handleSubmit();
 };
 
 app.success = function() {
@@ -51,5 +52,10 @@ app.handleUsernameClick = function() {
 };
 
 app.handleSubmit = function () {
-  
+  $('#send .submit').on('click', '', function() {
+    var message = {};
+    message.username = (window.location.search).slice(10);
+    message.text = $('input[name=messageForm]').val();
+    app.send(message);
+  });
 };

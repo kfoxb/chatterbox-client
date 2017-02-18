@@ -6,7 +6,7 @@ app.server = 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages';
 app.init = function() {
   app.handleUsernameClick();
   app.handleSubmit();
-  //app.fetch();
+  app.fetch();
   //setInterval(app.fetch, 1000);
 };
 
@@ -33,7 +33,10 @@ app.fetch = function() {
     contentType: 'application/json',
     success: function(data) {
       // debugger;
-      console.log('this worked!' + JSON.stringify(data.results));
+      // console.log('this worked!' + JSON.stringify(data.results));
+      for (var i = 0; i < data.results.length; i++) {
+        app.renderMessage(data.results[i]);
+      }
     },
     failure: function(data) {
       console.log('this failed:' + data);
@@ -45,7 +48,7 @@ app.clearMessages = function() {
   $('#chats').children().remove();
 };
 
-app.renderMessage = function(...message) {
+app.renderMessage = function(message) {
   var text = '<div>' + message.text + '</div>';
   var username = '<a class="username" href="#">' + message.username + '</a>';
   $('#main').append(username);
@@ -71,3 +74,5 @@ app.handleSubmit = function () {
     app.send(message);
   });
 };
+
+app.init();

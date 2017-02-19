@@ -3,7 +3,7 @@ var app = {};
 
 app.server = 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages';
 
-app.init = function() {
+app.init = () => {
   app.fetch(); 
   app.handleUsernameClick();
   app.handleSubmit();
@@ -12,7 +12,7 @@ app.init = function() {
   //setInterval(app.fetch, 2000);
 };
 
-app.processFetch = function(data) {
+app.processFetch = (data) => {
   for (let message of data.results) {
     //adds each message to storage object with objectID as key after escaping all parts of the message.
     app.messageStorage[message.objectId] = app.escapeMessage(message);
@@ -33,7 +33,7 @@ app.messageStorage = {};
 app.friendList = {};
 app.roomList = new Set(['lobby']);
 
-app.send = function(message) {
+app.send = (message) => {
   $.ajax({
     url: app.server,
     type: 'POST',
@@ -60,7 +60,7 @@ app.fetch = () => {
 };
 
 
-app.clearMessages = function() {
+app.clearMessages = () => {
   $('#chats').children().remove();
 };
 
@@ -72,7 +72,7 @@ app.escapeMessage = (message) => {
 };
 
 
-app.renderMessage = function(message) {
+app.renderMessage = (message) => {
   var text = '<div>' + message.text + '</div>';
   var username = '<a class="username" href="#">' + message.username + '</a>';
   var roomName = '<div>' + message.roomname + '</div>';
@@ -85,15 +85,16 @@ app.renderMessage = function(message) {
 };
 
 
-app.handleUsernameClick = function() {
-  $('#chats').on('click', '.username', function() {
+app.handleUsernameClick = () => {
+  $('#chats').on('click', '.username', function(event) {
+    event.preventDefault();
     var username = $(this).text();
     app.friendList[username] = username;
     app.generateRoom();
   });
 };
 
-app.handleSubmit = function() {
+app.handleSubmit = () => {
   $('#send form').submit(function(event) {
     //stops page from refreshing after clicking submit
     event.preventDefault();
@@ -110,11 +111,11 @@ app.handleSubmit = function() {
   });
 };
 
-app.changeRoom = function() {
+app.changeRoom = () => {
   $('#roomSelect').on('change', app.generateRoom);
 };
 
-app.createRoom = function() {
+app.createRoom = () => {
   $('#createRoom form').submit(function(event) {
     event.preventDefault();
     let $form = $('input[name=createRoomForm]');
@@ -137,7 +138,7 @@ app.generateRoom = () => {
   }
 };
 
-app.renderRoom = function(roomName) {
+app.renderRoom = (roomName) => {
   var room = '<option>' + roomName + '</option>';
   $('#roomSelect').append(room);
 };

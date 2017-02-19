@@ -4,10 +4,7 @@ var app = {};
 app.server = 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages';
 
 app.init = function() {
-  app.fetch((data) => {
-    app.appendFetchtoStorage(data);
-    app.initialize();
-  }); 
+  app.fetch(); 
   app.handleUsernameClick();
   app.handleSubmit();
   app.changeRoom();
@@ -15,16 +12,22 @@ app.init = function() {
   //setInterval(app.fetch, 2000);
 };
 
-app.initialize = () => {
-  //move this functionality into appendFetchtoStorage
-  for (let message in app.messageStorage) {
-    app.roomList.add(app.messageStorage[message].roomname);
+app.appendFetchtoStorage = function(data) {
+  for (let message of data.results) {
+    //adds each message to storage object with objectID as key after escaping all parts of the message.
+
+    app.messageStorage[message.objectId] = app.escapeMessage(message);
+    //add each roomname property to a roomList set to have a list of unique roomnames
+    app.roomList.add(message.roomname);
   }
-  //delete all menu children before this loop runs
+  //remove all children from room dropdown menu
+  $('#roomSelect').children().remove();
+
+  //repopulate dropdown menu adding new rooms if there are any.
   for (let room of app.roomList) {
     app.renderRoom(room);
   }
-
+  debugger;
   app.generateRoom();
 };
 
@@ -43,55 +46,33 @@ app.send = function(message) {
   });
 };
 
-app.fetch = (cb = appendFetchtoStorage) => {
+app.fetch = () => {
   $.ajax({
     url: app.server,
     data: {
       order: '-createdAt'
     },
     type: 'GET',
-    datatype: 'json',
     contentType: 'application/json',
-    success: cb,
+    success: app.appendFetchtoStorage,
     failure: function(data) {
       console.log('this failed:' + data);
     }
   });
 };
 
-app.appendFetchtoStorage = function(data) {
-  for (var i = 0; i < data.results.length; i++) {
-    app.messageStorage[data.results[i].objectId] = app.escapeMessage(data.results[i]);
-  }
-},
 
 app.clearMessages = function() {
   $('#chats').children().remove();
 };
 
-app.escapeMessage = function(message) {
-  //debugger;
-  var escapeCharacters = ['"', '&', '<', '>'];
-  for (var key in message) {
-    //this filters out people that use null as a username, roomname, or message
-    if (message[key] !== null) {
-      var string = message[key].split('');
-      for (var i = 0; i < string.length; i++) {
-        if (string[i] === escapeCharacters[0]) {
-          string.splice(i, 1, '&quot;');
-        } else if (string[i] === escapeCharacters[1]) {
-          string.splice(i, 1, '&amp;');
-        } else if (string[i] === escapeCharacters[2]) {
-          string.splice(i, 1, '&lt;');
-        } else if (string[i] === escapeCharacters[3]) {
-          string.splice(i, 1, '&gt;');
-        }
-      }
-    }
-    message[key] = string.join('');
-  }
+app.escapeMessage = (message) => {
+  message.username = _.escape(message.username);
+  message.roomname = _.escape(message.roomname);
+  message.text = _.escape(message.text);
   return message;
 };
+
 
 app.renderMessage = function(message, appendOrPrepend = 'append') {
   var text = '<div>' + message.text + '</div>';

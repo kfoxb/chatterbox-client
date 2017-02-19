@@ -1,5 +1,5 @@
 
-var app = {};
+let app = {};
 
 app.server = 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages';
 
@@ -73,14 +73,14 @@ app.escapeMessage = (message) => {
 
 
 app.renderMessage = (message) => {
-  var text = '<div>' + message.text + '</div>';
-  var username = '<a class="username" href="#">' + message.username + '</a>';
-  var roomName = '<div>' + message.roomname + '</div>';
+  let text = '<div>' + message.text + '</div>';
+  let username = '<a class="username" href="#">' + message.username + '</a>';
+  let roomName = '<div>' + message.roomname + '</div>';
   if (app.friendList[message.username] !== undefined) {
     username = '<strong>' + username + '</strong>';
     text = '<strong>' + text + '</strong>';
   }
-  var completeMessage = '<div>' + username + text + roomName + '</div>';
+  let completeMessage = '<div>' + username + text + roomName + '</div>';
   $('#chats').prepend(completeMessage);
 };
 
@@ -88,7 +88,7 @@ app.renderMessage = (message) => {
 app.handleUsernameClick = () => {
   $('#chats').on('click', '.username', function(event) {
     event.preventDefault();
-    var username = $(this).text();
+    let username = $(this).text();
     app.friendList[username] = username;
     app.generateRoom();
   });
@@ -98,7 +98,7 @@ app.handleSubmit = () => {
   $('#send form').submit(function(event) {
     //stops page from refreshing after clicking submit
     event.preventDefault();
-    var $form = $('input[name=messageForm]');
+    let $form = $('input[name=messageForm]');
     //if form has input, send message and reset form
     if ($form.val() !== '') {
       app.send({
@@ -131,7 +131,7 @@ app.createRoom = () => {
 
 app.generateRoom = () => {
   app.clearMessages();
-  for (var key in app.messageStorage) {
+  for (let key in app.messageStorage) {
     if (app.messageStorage[key].roomname === $(':selected').val()) {
       app.renderMessage(app.messageStorage[key]);
     }
@@ -139,7 +139,7 @@ app.generateRoom = () => {
 };
 
 app.renderRoom = (roomName) => {
-  var room = '<option>' + roomName + '</option>';
+  let room = '<option>' + roomName + '</option>';
   $('#roomSelect').append(room);
 };
 

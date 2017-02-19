@@ -15,7 +15,6 @@ app.init = function() {
 app.appendFetchtoStorage = function(data) {
   for (let message of data.results) {
     //adds each message to storage object with objectID as key after escaping all parts of the message.
-
     app.messageStorage[message.objectId] = app.escapeMessage(message);
     //add each roomname property to a roomList set to have a list of unique roomnames
     app.roomList.add(message.roomname);
@@ -27,7 +26,7 @@ app.appendFetchtoStorage = function(data) {
   for (let room of app.roomList) {
     app.renderRoom(room);
   }
-  debugger;
+  
   app.generateRoom();
 };
 
@@ -41,7 +40,7 @@ app.send = function(message) {
     type: 'POST',
     contentType: 'application/json',
     datatype: 'json',
-    success: null,
+    success: app.fetch,
     data: JSON.stringify(message)
   });
 };
@@ -74,7 +73,7 @@ app.escapeMessage = (message) => {
 };
 
 
-app.renderMessage = function(message, appendOrPrepend = 'append') {
+app.renderMessage = function(message) {
   var text = '<div>' + message.text + '</div>';
   var username = '<a class="username" href="#">' + message.username + '</a>';
   var roomName = '<div>' + message.roomname + '</div>';
@@ -83,7 +82,7 @@ app.renderMessage = function(message, appendOrPrepend = 'append') {
     text = '<strong>' + text + '</strong>';
   }
   var completeMessage = '<div>' + username + text + roomName + '</div>';
-  $('#chats')[appendOrPrepend](completeMessage);
+  $('#chats').prepend(completeMessage);
 };
 
 
@@ -97,14 +96,18 @@ app.handleUsernameClick = function() {
 
 app.handleSubmit = function() {
   $('#send form').submit(function(event) {
+    //stops page from refreshing after clicking submit
     event.preventDefault();
-    var message = {};
-    message.username = (window.location.search).slice(10);
-    message.text = $('input[name=messageForm]').val();
-    message.roomname = $(':selected').val();
-    app.send(message);
-    $('input[name=messageForm]').val('');
-    app.renderMessage(message, 'prepend');
+    var $form = $('input[name=messageForm]');
+    //if form has input, send message and reset form
+    if ($form.val() !== '') {
+      app.send({
+        username: (window.location.search).slice(10),
+        text: $form.val(),
+        roomname: $(':selected').val()
+      });
+      $form.val('');
+    }
   });
 };
 
@@ -136,43 +139,5 @@ app.renderRoom = function(roomName) {
   var room = '<option>' + roomName + '</option>';
   $('#roomSelect').append(room);
 };
-
-// app.refresh = function() {
-//   // app.fetch();
-//   //clears all chats off screen
-//   $('#chats').children().remove();
-//   var initializeRooms = function(storage) {
-//     var roomList = {};
-//     for (var key in storage) {
-//       var roomName = storage[key].roomname;
-//       roomList[roomName] = roomName;
-//     }
-
-//     for (key in roomList) {
-//       app.renderRoom(roomList[key]);
-//     }
-//   };
-  
-//   var initializeMessages = function(storage) {
-//     for (key in storage) {
-//       app.renderMessage(storage[key]);
-//     }
-//   };
-
-//   initializeRooms(app.messageStorage);
-//   initializeMessages(app.messageStorage);
-// };
-
-// handler for our drop down menu to hide other rooms
-
-// app.resetToCorrectRoom = function() {
-//   $('#chats').children().remove();
-//   for (var key in app.messageStorage) {
-//     if (app.messageStorage[key].roomname === $(':selected').val()) {
-//       app.renderMessage(app.messageStorage[key]);
-//     }
-//   }
-// };
-
 
 $('document').ready(app.init);

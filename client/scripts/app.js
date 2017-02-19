@@ -8,10 +8,12 @@ app.init = function() {
   app.handleUsernameClick();
   app.handleSubmit();
   app.filterRooms();
-  
+  app.createRoom();
+  setInterval(app.resetToCorrectRoom, 2000);
 };
 
 app.messageStorage = {};
+app.friendList = {};
 
 app.success = function() {
   console.log('success');
@@ -83,10 +85,15 @@ app.escapeMessage = function(message) {
 };
 
 app.renderMessage = function(message, appendOrPrepend = 'append') {
+  // debugger;
   message = app.escapeMessage(message);
   var text = '<div>' + message.text + '</div>';
   var username = '<a class="username" href="#">' + message.username + '</a>';
   var roomName = '<div>' + message.roomname + '</div>';
+  if (app.friendList[message.username] !== undefined) {
+    username = '<strong>' + username + '</strong>';
+    text = '<strong>' + text + '</strong>';
+  }
   var completeMessage = '<div>' + username + text + roomName + '</div>';
   //$('#main').append(username);
   $('#chats')[appendOrPrepend](completeMessage);
@@ -98,13 +105,15 @@ app.renderRoom = function (roomName) {
 };
 
 app.handleUsernameClick = function() {
-  $('#main').on('click', '.username', function() {
-    console.log('I\'ve been clicked!');
+  $('#chats').on('click', '.username', function() {
+    var username = $(this).text();
+    app.friendList[username] = username;
+    app.resetToCorrectRoom();
   });
 };
 
 app.handleSubmit = function() {
-  $('form').submit(function(event) {
+  $('#send form').submit(function(event) {
     event.preventDefault();
     var message = {};
     message.username = (window.location.search).slice(10);
@@ -155,6 +164,19 @@ app.resetToCorrectRoom = function() {
       app.renderMessage(app.messageStorage[key]);
     }
   }
+};
+
+app.createRoom = function() {
+  $('#createRoom form').submit(function(event) {
+    event.preventDefault();
+    var message = {};
+    message.roomname = $('input[name=createRoomForm]').val();
+    app.messageStorage[message.roomname] = message.roomname;
+    $('input[name=createRoomForm]').val('');
+    app.renderRoom(message.roomname);
+    $('#roomSelect').val(message.roomname);
+    app.resetToCorrectRoom();
+  });
 };
 
 $('document').ready(app.init);

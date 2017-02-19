@@ -12,7 +12,7 @@ app.init = function() {
   //setInterval(app.fetch, 2000);
 };
 
-app.appendFetchtoStorage = function(data) {
+app.processFetch = function(data) {
   for (let message of data.results) {
     //adds each message to storage object with objectID as key after escaping all parts of the message.
     app.messageStorage[message.objectId] = app.escapeMessage(message);
@@ -26,13 +26,12 @@ app.appendFetchtoStorage = function(data) {
   for (let room of app.roomList) {
     app.renderRoom(room);
   }
-  
   app.generateRoom();
 };
 
 app.messageStorage = {};
 app.friendList = {};
-app.roomList = new Set();
+app.roomList = new Set(['lobby']);
 
 app.send = function(message) {
   $.ajax({
@@ -53,7 +52,7 @@ app.fetch = () => {
     },
     type: 'GET',
     contentType: 'application/json',
-    success: app.appendFetchtoStorage,
+    success: app.processFetch,
     failure: function(data) {
       console.log('this failed:' + data);
     }
@@ -118,11 +117,14 @@ app.changeRoom = function() {
 app.createRoom = function() {
   $('#createRoom form').submit(function(event) {
     event.preventDefault();
-    let roomname = $('input[name=createRoomForm]').val();
-    app.renderRoom(roomname);
-    $('input[name=createRoomForm]').val('');
-    $('#roomSelect').val(roomname);
-    app.generateRoom();
+    let $form = $('input[name=createRoomForm]');
+    if ($form.val() !== '') {
+      let roomname = $form.val();
+      app.renderRoom(roomname);
+      $form.val('');
+      $('#roomSelect').val(roomname);
+      app.generateRoom();
+    }
   });
 };
 

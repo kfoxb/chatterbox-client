@@ -1,3 +1,9 @@
+//TODO
+/*
+FIX on submit taken back to lobby instead of staying in current room
+Fix on fetch messages are duplicated into storage array
+*/
+
 
 let app = {};
 
@@ -13,11 +19,28 @@ app.init = () => {
 };
 
 app.processFetch = (data) => {
-  for (let message of data.results) {
-    //adds each message to storage object with objectID as key after escaping all parts of the message.
-    app.messageStorage[message.objectId] = app.escapeMessage(message);
-    //add each roomname property to a roomList set to have a list of unique roomnames
-    app.roomList.add(message.roomname);
+  // for (let message of data.results) {
+  //   //adds each message to storage object with objectID as key after escaping all parts of the message.
+  //   app.messageStorage[message.objectId] = app.escapeMessage(message);
+  //   //add each roomname property to a roomList set to have a list of unique roomnames
+  //   app.roomList.add(message.roomname);
+  // }
+
+
+//this causes duplicate messages to be added to storage
+  for (var i = data.results.length - 1; i >= 0; i--) {
+    let message = data.results[i];
+
+    if (app.messageStorage.length !== 0 || app.messageStorage[app.messageStorage.length - 1].objectId !== message.objectId) { 
+      continue;
+    } else {
+      for (; i >= 0; i--) {
+        app.messageStorage.push(message);
+      }
+      // break;
+    }
+
+    app.roomList.add(data.results[i].roomname);
   }
   //remove all children from room dropdown menu
   $('#roomSelect').children().remove();
@@ -29,7 +52,8 @@ app.processFetch = (data) => {
   app.generateRoom();
 };
 
-app.messageStorage = {};
+
+app.messageStorage = [];
 app.friendList = {};
 app.roomList = new Set(['lobby']);
 
@@ -44,7 +68,7 @@ app.send = (message) => {
   });
 };
 
-app.fetch = () => {
+app.fetch = (cb = app.processFetch) => {
   $.ajax({
     url: app.server,
     data: {
@@ -52,7 +76,7 @@ app.fetch = () => {
     },
     type: 'GET',
     contentType: 'application/json',
-    success: app.processFetch,
+    success: cb,
     failure: function(data) {
       console.log('this failed:' + data);
     }
@@ -107,6 +131,9 @@ app.handleSubmit = () => {
         roomname: $(':selected').val()
       });
       $form.val('');
+      //I have no idea why this is needed because send should call app.fetch upon completion
+      //but messages don't show up without it.
+      app.fetch();
     }
   });
 };
@@ -121,19 +148,23 @@ app.createRoom = () => {
     let $form = $('input[name=createRoomForm]');
     if ($form.val() !== '') {
       let roomname = $form.val();
-      app.renderRoom(roomname);
+      // app.renderRoom(roomname);
+      app.roomList.add(roomname);
       $form.val('');
-      $('#roomSelect').val(roomname);
-      app.generateRoom();
+      app.fetch((data) => {
+        app.processFetch(data);
+        $('#roomSelect').val(roomname);
+        app.generateRoom();
+      });
     }
   });
 };
 
 app.generateRoom = () => {
   app.clearMessages();
-  for (let key in app.messageStorage) {
-    if (app.messageStorage[key].roomname === $(':selected').val()) {
-      app.renderMessage(app.messageStorage[key]);
+  for (let message of app.messageStorage) {
+    if (message.roomname === $(':selected').val()) {
+      app.renderMessage(message);
     }
   }
 };
